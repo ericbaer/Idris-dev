@@ -50,6 +50,9 @@ toIFaceTyVal ty tm
    | (P _ exp _, [P _ ffi _, Constant (Str hdr), _]) <- unApply ty
          = do tm' <- toIFaceVal tm
               return $ Export ffi hdr tm'
+   | (P _ _ _, [_, _, _]) <- unApply ty
+         = ifail "Export file name must be a string constant"
+   | otherwise = ifail "Can't happen [toIFaceTyVal]"
 
 toIFaceVal :: Term -> Idris [Export]
 toIFaceVal tm
