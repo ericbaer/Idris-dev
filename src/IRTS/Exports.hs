@@ -50,9 +50,19 @@ toIFaceTyVal ty tm
    | (P _ exp _, [P _ ffi _, Constant (Str hdr), _]) <- unApply ty
          = do tm' <- toIFaceVal tm
               return $ Export ffi hdr tm'
-   | (P _ _ _, [_, _, _]) <- unApply ty
-         = ifail "Export file name must be a string constant"
+   | (P _ exp _, [P _ ffi _, _, _]) <- unApply ty
+         = do hdr <- fileNameFromExports tm
+              tm' <- toIFaceVal tm
+              return $ Export ffi hdr tm'
    | otherwise = ifail "Can't happen [toIFaceTyVal]"
+
+fileNameFromExports :: Term -> Idris String
+fileNameFromExports (App Complete ty arg)
+   | (_, (Constant (Str hdr)):_) <- unApply ty
+       = return hdr
+   | otherwise
+       = ifail "Bad export file name"
+fileNameFromExports tm = ifail $ "Badly formed export list " ++ show tm
 
 toIFaceVal :: Term -> Idris [Export]
 toIFaceVal tm
